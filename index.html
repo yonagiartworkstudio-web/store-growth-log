@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Store Growth Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;1,400&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #E60012; --red-soft: #fff0f0; --red-mid: rgba(230,0,18,0.1);
+  --amber: #f59e0b; --amber-soft: #fffbeb; --amber-mid: rgba(245,158,11,0.12);
+  --purple: #7c3aed; --purple-soft: #f5f3ff; --purple-mid: rgba(124,58,237,0.1);
+  --green: #16a34a; --green-soft: #f0fdf4;
+  --blue: #0369a1; --blue-soft: #f0f9ff;
+  --bg: #f5f4f0; --surface: #ffffff; --surface2: #f0ede8;
+  --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+  --text: #1a1a1a; --text2: #5a5a5a; --text3: #9a9a9a;
+  --radius: 14px; --radius-sm: 9px; --radius-xs: 6px;
+  --font: 'DM Sans','Noto Sans JP',sans-serif;
+  --morning: #f59e0b; --evening: #E60012;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Shell ── */
+.shell{max-width:430px;margin:0 auto;padding:0 0 100px;}
+
+/* ── Header ── */
+.header{padding:18px 16px 0;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:14px;font-weight:500;letter-spacing:-0.3px;}
+.logo em{color:var(--red);font-style:normal;}
+.streak{background:var(--red-soft);color:var(--red);font-size:11px;font-weight:500;border-radius:20px;padding:3px 10px;}
+
+/* ── Mode toggle ── */
+.mode-wrap{padding:12px 16px 0;}
+.mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:3px;}
+.mode-btn{padding:10px;border:none;border-radius:var(--radius-sm);background:transparent;font-family:var(--font);font-size:13px;font-weight:400;color:var(--text2);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.mode-btn.active{font-weight:500;color:#fff;}
+.mode-btn.mode-morning.active{background:var(--morning);}
+.mode-btn.mode-evening.active{background:var(--evening);}
+
+/* ── Nav ── */
+.nav-wrap{padding:10px 16px 0;}
+.nav{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:3px;border:0.5px solid var(--border);}
+.nav button{flex:1;padding:8px 2px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text3);font-size:11px;font-family:var(--font);cursor:pointer;transition:all 0.15s;}
+.nav button.active{background:var(--surface2);color:var(--text);font-weight:500;}
+
+/* ── Sections ── */
+.section{display:none;padding:12px 16px 0;}
+.section.active{display:block;}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;}
+.card-title{font-size:13px;font-weight:500;margin-bottom:13px;color:var(--text);display:flex;align-items:center;gap:7px;}
+.card-badge{font-size:10px;font-weight:400;color:var(--text3);background:var(--surface2);border-radius:10px;padding:2px 7px;}
+.lbl{font-size:10px;color:var(--text3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.6px;}
+
+/* ── Inputs ── */
+textarea,input[type=text]{width:100%;border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:9px 11px;font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);resize:none;transition:border 0.15s;line-height:1.5;}
+textarea{height:58px;}
+textarea:focus,input[type=text]:focus{outline:none;border-color:var(--red);background:#fff;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+
+/* ── Sliders ── */
+.slider-block{margin-bottom:2px;}
+.slider-row{display:flex;align-items:center;gap:10px;margin-bottom:3px;}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--surface2);outline:none;cursor:pointer;}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--red);cursor:pointer;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(230,0,18,0.25);transition:transform 0.1s;}
+.slider-row input[type=range]:active::-webkit-slider-thumb{transform:scale(1.18);}
+.slider-val{font-size:15px;font-weight:500;color:var(--text);min-width:22px;text-align:right;}
+.slider-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);padding:0 2px;margin-bottom:13px;}
+
+/* ── Energy picker ── */
+.energy-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:5px;}
+.ep{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px 5px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;transition:all 0.12s;-webkit-tap-highlight-color:transparent;}
+.ep:active{transform:scale(0.91);}
+.ep.sel{border-color:var(--red);background:var(--red-soft);}
+.ep.dim{opacity:0.35;pointer-events:none;}
+.ep-emo{font-size:19px;line-height:1;}
+.ep-txt{font-size:8.5px;color:var(--text3);text-align:center;line-height:1.3;}
+.ep.sel .ep-txt{color:var(--red);}
+.toggle-more{font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:var(--font);padding:2px 0 8px;}
+.energy-display{font-size:12px;color:var(--text2);min-height:15px;margin-bottom:12px;}
+.energy-display strong{color:var(--text);}
+.divider{border:none;border-top:0.5px solid var(--border);margin:13px 0;}
+
+/* ── Morning prediction card ── */
+.predict-card{background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border:0.5px solid rgba(245,158,11,0.3);border-radius:var(--radius);padding:16px;margin-bottom:10px;}
+.predict-title{font-size:13px;font-weight:500;color:#92400e;margin-bottom:3px;display:flex;align-items:center;gap:6px;}
+.predict-sub{font-size:11px;color:#b45309;margin-bottom:13px;line-height:1.5;}
+.predict-card textarea{background:#fff;border-color:rgba(245,158,11,0.3);height:52px;}
+.predict-card textarea:focus{border-color:var(--amber);}
+.predict-card .lbl{color:#b45309;}
+
+/* ── Prediction review (evening) ── */
+.review-block{margin-bottom:14px;}
+.pred-review-item{background:var(--amber-soft);border:0.5px solid rgba(245,158,11,0.2);border-radius:var(--radius-sm);padding:11px 12px;margin-bottom:8px;}
+.pred-original{font-size:12px;color:#92400e;margin-bottom:7px;line-height:1.5;}
+.pred-original span{font-size:10px;font-weight:500;background:rgba(245,158,11,0.2);color:#92400e;border-radius:8px;padding:1px 6px;margin-right:5px;}
+.hit-row{display:flex;gap:5px;margin-bottom:6px;}
+.hit-btn{flex:1;padding:6px 3px;border:0.5px solid rgba(245,158,11,0.25);border-radius:var(--radius-xs);background:#fff;cursor:pointer;font-size:11px;font-family:var(--font);color:var(--text2);text-align:center;transition:all 0.12s;}
+.hit-btn[data-h="hit"].sel{background:#16a34a;color:#fff;border-color:#16a34a;}
+.hit-btn[data-h="miss"].sel{background:#E60012;color:#fff;border-color:#E60012;}
+.hit-btn[data-h="partial"].sel{background:#f59e0b;color:#fff;border-color:#f59e0b;}
+.pred-review-item textarea{background:#fff;border-color:rgba(245,158,11,0.2);height:48px;font-size:13px;}
+
+/* ── Viewpoint tabs ── */
+.vp-tabs{display:flex;gap:4px;margin-bottom:9px;flex-wrap:wrap;}
+.vp-tab{padding:5px 9px;border:0.5px solid var(--border2);border-radius:20px;background:var(--bg);cursor:pointer;font-size:10.5px;font-family:var(--font);color:var(--text2);transition:all 0.12s;white-space:nowrap;}
+.vp-tab:active{transform:scale(0.95);}
+.vp-tab.sel{color:#fff;border-color:transparent;font-weight:500;}
+.vp-tab[data-vp="cs"].sel{background:#7c3aed;}
+.vp-tab[data-vp="ops"].sel{background:#b45309;}
+.vp-tab[data-vp="vmd"].sel{background:#0369a1;}
+.vp-tab[data-vp="loop"].sel{background:#be123c;}
+.hint-box{border-radius:var(--radius-sm);padding:9px 11px;font-size:11.5px;line-height:1.6;margin-bottom:7px;display:none;border-left:2.5px solid;}
+.hint-box.show{display:block;}
+.hint-box[data-vp="cs"]{background:#f5f3ff;color:#5b21b6;border-color:#7c3aed;}
+.hint-box[data-vp="ops"]{background:#fffbeb;color:#92400e;border-color:#b45309;}
+.hint-box[data-vp="vmd"]{background:#f0f9ff;color:#075985;border-color:#0369a1;}
+.hint-box[data-vp="loop"]{background:#fff1f2;color:#9f1239;border-color:#be123c;}
+
+/* ── Error signal ── */
+.error-card{background:#fafaf9;border:0.5px solid var(--border);border-left:2.5px solid var(--amber);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.error-title{font-size:13px;font-weight:500;color:#92400e;margin-bottom:3px;}
+.error-sub{font-size:11px;color:#b45309;margin-bottom:10px;line-height:1.5;}
+.ei-row{display:flex;gap:5px;margin-bottom:8px;}
+.ei-btn{flex:1;padding:6px 2px;border:0.5px solid rgba(245,158,11,0.25);border-radius:var(--radius-xs);background:#fff;cursor:pointer;font-size:10.5px;font-family:var(--font);color:var(--text2);text-align:center;transition:all 0.12s;}
+.ei-btn.sel{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:500;}
+.error-card textarea{background:#fff;border-color:rgba(245,158,11,0.25);height:52px;}
+
+/* ── Transfer learning ── */
+.transfer-card{background:var(--purple-soft);border:0.5px solid rgba(124,58,237,0.15);border-left:2.5px solid var(--purple);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.transfer-title{font-size:13px;font-weight:500;color:#5b21b6;margin-bottom:3px;}
+.transfer-sub{font-size:11px;color:#7c3aed;margin-bottom:9px;line-height:1.5;opacity:0.85;}
+.te-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px;}
+.te-chip{font-size:10px;background:#ede9fe;color:#5b21b6;border-radius:20px;padding:3px 9px;cursor:pointer;border:none;font-family:var(--font);transition:all 0.12s;}
+.te-chip:active{background:#7c3aed;color:#fff;}
+.transfer-card textarea{background:#fff;border-color:rgba(124,58,237,0.2);height:50px;}
+
+/* ── Gratitude ── */
+.grat-card{background:var(--green-soft);border:0.5px solid rgba(22,163,74,0.2);border-left:2.5px solid var(--green);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.grat-title{font-size:13px;font-weight:500;color:#15803d;margin-bottom:3px;}
+.grat-sub{font-size:11px;color:#16a34a;margin-bottom:9px;line-height:1.5;opacity:0.85;}
+.grat-type-row{display:flex;gap:5px;margin-bottom:7px;}
+.grat-type-btn{flex:1;padding:6px 2px;border:0.5px solid rgba(22,163,74,0.2);border-radius:var(--radius-xs);background:#fff;cursor:pointer;font-size:11px;font-family:var(--font);color:var(--text2);text-align:center;transition:all 0.12s;}
+.grat-type-btn.sel{background:var(--green);color:#fff;border-color:var(--green);font-weight:500;}
+.grat-card textarea{background:#fff;border-color:rgba(22,163,74,0.2);height:52px;}
+
+/* ── Save btn ── */
+.btn-main{width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:500;font-family:var(--font);cursor:pointer;transition:opacity 0.15s;letter-spacing:-0.2px;margin-top:2px;}
+.btn-main.morning{background:var(--morning);}
+.btn-main:active{opacity:0.83;}
+.btn-main:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-sub{width:100%;padding:11px;background:transparent;color:var(--red);border:1px solid var(--red);border-radius:var(--radius);font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer;}
+
+/* ── AI result ── */
+.ai-tag{display:inline-block;font-size:10px;font-weight:500;background:var(--red-mid);color:var(--red);border-radius:20px;padding:2px 9px;margin-bottom:8px;}
+.ai-box{background:var(--surface2);border-radius:var(--radius-sm);padding:13px;font-size:13px;color:var(--text);line-height:1.75;}
+
+/* ── Skills ── */
+.skill-item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:0.5px solid var(--border);}
+.skill-item:last-child{border-bottom:none;}
+.skill-name{flex:1;font-size:13px;}
+.bar-wrap{width:66px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--red);border-radius:2px;transition:width 0.35s ease;}
+.skill-pct{font-size:11px;color:var(--text3);width:26px;text-align:right;}
+.skill-plus{font-size:15px;border:none;background:none;cursor:pointer;color:var(--text3);padding:2px 4px;font-family:var(--font);}
+
+/* ── History ── */
+.log-item{padding:11px 0;border-bottom:0.5px solid var(--border);}
+.log-item:last-child{border-bottom:none;}
+.log-meta{font-size:10.5px;color:var(--text3);margin-bottom:3px;}
+.log-mode-tag{display:inline-block;font-size:9px;border-radius:8px;padding:1px 6px;margin-right:4px;font-weight:500;}
+.log-mode-morning{background:var(--amber-soft);color:#92400e;}
+.log-mode-evening{background:var(--red-soft);color:var(--red);}
+.log-nums{font-size:12.5px;color:var(--text);}
+.log-row{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5;}
+.tag-pill{display:inline-block;font-size:9.5px;border-radius:8px;padding:1px 6px;margin-right:3px;vertical-align:middle;}
+.pill-cs{background:#ede9fe;color:#5b21b6;}
+.pill-ops{background:#fef3c7;color:#92400e;}
+.pill-vmd{background:#e0f2fe;color:#075985;}
+.pill-loop{background:#ffe4e6;color:#9f1239;}
+.pill-hit{background:#dcfce7;color:#15803d;}
+.pill-miss{background:#fee2e2;color:#991b1b;}
+.pill-partial{background:#fef3c7;color:#92400e;}
+.log-ai{font-size:11px;color:var(--red);margin-top:3px;}
+
+/* ── Stats ── */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;}
+.stat-card{background:var(--surface2);border-radius:var(--radius-sm);padding:11px 7px;text-align:center;}
+.stat-val{font-size:21px;font-weight:500;}
+.stat-lbl{font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:0.4px;}
+
+/* ── Misc ── */
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.65s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#energyChart{width:100%!important;}
+.empty{font-size:12.5px;color:var(--text3);text-align:center;padding:22px 0;}
+.section-note{font-size:11px;color:var(--text3);text-align:center;margin:6px 0 0;line-height:1.5;}
+
+/* ── Morning only / Evening only visibility ── */
+.morning-only{display:block;}
+.evening-only{display:none;}
+body.evening .morning-only{display:none;}
+body.evening .evening-only{display:block;}
+</style>
+</head>
+<body class="morning">
+<div class="shell">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">Store<em>Growth</em>Log</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="streak" id="streak">🔥 0日連続</div>
+      <button onclick="authLogout()" style="font-size:10px;color:var(--text3);background:none;border:none;cursor:pointer;padding:3px 6px;">ログアウト</button>
+    </div>
+  </div>
+
+  <!-- Morning / Evening toggle -->
+  <div class="mode-wrap">
+    <div class="mode-toggle">
+      <button class="mode-btn mode-morning active" id="btn-morning" onclick="setMode('morning')">
+        ☀️ 朝モード　予測を立てる
+      </button>
+      <button class="mode-btn mode-evening" id="btn-evening" onclick="setMode('evening')">
+        🌙 夜モード　答え合わせ
+      </button>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-wrap">
+    <div class="nav">
+      <button class="active" onclick="tab('log',this)">日報</button>
+      <button onclick="tab('skill',this)">スキル</button>
+      <button onclick="tab('history',this)">履歴</button>
+      <button onclick="tab('dash',this)">統計</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ 日報タブ ═══════════════════════════ -->
+  <div class="section active" id="tab-log">
+
+    <!-- ☀️ MORNING: 予測3つだけ -->
+    <div class="morning-only">
+      <div class="predict-card">
+        <div class="predict-title">☀️ 今日の予測 — 出勤前1分</div>
+        <div class="predict-sub">「何が起こるか」を先に書く。夜に答え合わせして、ズレから学ぶ。</div>
+        <span class="lbl">予測①　今日いちばん難しそうなこと</span>
+        <textarea id="p1" placeholder="例：混雑時のレジと品出しの同時対応" style="margin-bottom:10px;"></textarea>
+        <span class="lbl">予測②　今日チャレンジしたいこと</span>
+        <textarea id="p2" placeholder="例：先輩に動線改善の提案を1つ持っていく" style="margin-bottom:10px;"></textarea>
+        <span class="lbl">予測③　今日の自分のエネルギー予測</span>
+        <textarea id="p3" placeholder="例：昨日疲れたので午後落ちそう。早めに動線を確保しておく"></textarea>
+      </div>
+      <button class="btn-main morning" id="morning-save-btn" onclick="saveMorning()">予測を保存して出勤 →</button>
+      <p class="section-note">夜に帰ったら「🌙 夜モード」に切り替えて答え合わせしよう</p>
+    </div>
+
+    <!-- 🌙 EVENING: 答え合わせ＋詳細 -->
+    <div class="evening-only">
+
+      <!-- 予測の答え合わせ -->
+      <div class="card" id="review-card">
+        <div class="card-title">🔍 予測の答え合わせ <span class="card-badge">朝の予測と比較</span></div>
+        <div class="review-block" id="review-block">
+          <div class="empty" style="padding:10px 0;">朝モードで予測を記録してから答え合わせしよう</div>
+        </div>
+      </div>
+
+      <!-- コンディション -->
+      <div class="card">
+        <div class="card-title">コンディション</div>
+        <span class="lbl">今日の気分</span>
+        <div class="energy-grid" id="eg-basic">
+          <button class="ep" data-v="1" data-n="超しんどい" onclick="selE(this)"><span class="ep-emo">😴</span><span class="ep-txt">超しんどい</span></button>
+          <button class="ep" data-v="2" data-n="ちょっとしんどい" onclick="selE(this)"><span class="ep-emo">😔</span><span class="ep-txt">ちょっとしんどい</span></button>
+          <button class="ep" data-v="3" data-n="ふつう" onclick="selE(this)"><span class="ep-emo">😐</span><span class="ep-txt">ふつう</span></button>
+          <button class="ep" data-v="4" data-n="元気！" onclick="selE(this)"><span class="ep-emo">😊</span><span class="ep-txt">元気！</span></button>
+          <button class="ep" data-v="5" data-n="最高！" onclick="selE(this)"><span class="ep-emo">🔥</span><span class="ep-txt">最高！</span></button>
+        </div>
+        <div class="energy-grid" id="eg-extra" style="display:none;">
+          <button class="ep" data-v="2" data-n="緊張してる" onclick="selE(this)"><span class="ep-emo">😬</span><span class="ep-txt">緊張してる</span></button>
+          <button class="ep" data-v="3" data-n="眠い" onclick="selE(this)"><span class="ep-emo">🥱</span><span class="ep-txt">眠い</span></button>
+          <button class="ep" data-v="4" data-n="集中モード" onclick="selE(this)"><span class="ep-emo">🎯</span><span class="ep-txt">集中モード</span></button>
+          <button class="ep" data-v="4" data-n="ワクワク" onclick="selE(this)"><span class="ep-emo">✨</span><span class="ep-txt">ワクワク</span></button>
+          <button class="ep" data-v="5" data-n="無敵モード" onclick="selE(this)"><span class="ep-emo">💪</span><span class="ep-txt">無敵モード</span></button>
+          <button class="ep" data-v="2" data-n="不安" onclick="selE(this)"><span class="ep-emo">😟</span><span class="ep-txt">不安</span></button>
+          <button class="ep" data-v="3" data-n="まあまあ" onclick="selE(this)"><span class="ep-emo">🙂</span><span class="ep-txt">まあまあ</span></button>
+          <button class="ep" data-v="4" data-n="やる気ある" onclick="selE(this)"><span class="ep-emo">😤</span><span class="ep-txt">やる気ある</span></button>
+          <button class="ep" data-v="1" data-n="体調悪い" onclick="selE(this)"><span class="ep-emo">🤒</span><span class="ep-txt">体調悪い</span></button>
+          <button class="ep" data-v="5" data-n="楽しい！" onclick="selE(this)"><span class="ep-emo">🥳</span><span class="ep-txt">楽しい！</span></button>
+        </div>
+        <button class="toggle-more" id="toggle-btn" onclick="toggleMore()">＋ もっと見る</button>
+        <div class="energy-display" id="energy-display">選択してください（最大3つ）</div>
+        <hr style="border:none;border-top:0.5px solid var(--border);margin:2px 0 13px;">
+        <div class="slider-block">
+          <span class="lbl">集中度</span>
+          <div class="slider-row"><input type="range" min="1" max="5" value="3" step="1" id="sl-focus" oninput="upd('sl-focus','sv-focus')"><span class="slider-val" id="sv-focus">3</span></div>
+          <div class="slider-labels"><span>ぼんやり</span><span>ゾーン</span></div>
+        </div>
+        <div class="slider-block">
+          <span class="lbl">チームの雰囲気</span>
+          <div class="slider-row"><input type="range" min="1" max="5" value="3" step="1" id="sl-team" oninput="upd('sl-team','sv-team')"><span class="slider-val" id="sv-team">3</span></div>
+          <div class="slider-labels"><span>ピリピリ</span><span>最高！</span></div>
+        </div>
+      </div>
+
+      <!-- 今日の数字 -->
+      <div class="card">
+        <div class="card-title">今日の数字</div>
+        <div class="slider-block">
+          <span class="lbl">品出し（箱数）</span>
+          <div class="slider-row"><input type="range" min="0" max="30" value="0" step="1" id="sl-stock" oninput="upd('sl-stock','sv-stock')"><span class="slider-val" id="sv-stock">0</span></div>
+          <div class="slider-labels"><span>0箱</span><span>30箱</span></div>
+        </div>
+        <div class="slider-block">
+          <span class="lbl">畳み（枚数）</span>
+          <div class="slider-row"><input type="range" min="0" max="200" value="0" step="5" id="sl-fold" oninput="upd('sl-fold','sv-fold')"><span class="slider-val" id="sv-fold">0</span></div>
+          <div class="slider-labels"><span>0枚</span><span>200枚</span></div>
+        </div>
+        <div class="slider-block">
+          <span class="lbl">接客（人数）</span>
+          <div class="slider-row"><input type="range" min="0" max="50" value="0" step="1" id="sl-cs" oninput="upd('sl-cs','sv-cs')"><span class="slider-val" id="sv-cs">0</span></div>
+          <div class="slider-labels"><span>0人</span><span>50人</span></div>
+        </div>
+        <div class="slider-block">
+          <span class="lbl">勤務時間</span>
+          <div class="slider-row"><input type="range" min="0" max="10" value="0" step="0.5" id="sl-hours" oninput="upd('sl-hours','sv-hours')"><span class="slider-val" id="sv-hours">0</span></div>
+          <div class="slider-labels"><span>0h</span><span>10h</span></div>
+        </div>
+      </div>
+
+      <!-- 気づき（視点タグ） -->
+      <div class="card">
+        <div class="card-title">今日の気づき</div>
+        <span class="lbl">視点を選ぶ（任意）</span>
+        <div class="vp-tabs">
+          <button class="vp-tab" data-vp="cs"   onclick="selVP('cs')">👤 顧客視点</button>
+          <button class="vp-tab" data-vp="ops"  onclick="selVP('ops')">⚙️ 現場効率</button>
+          <button class="vp-tab" data-vp="vmd"  onclick="selVP('vmd')">💡 VMD演出</button>
+          <button class="vp-tab" data-vp="loop" onclick="selVP('loop')">🔁 ダブルループ</button>
+        </div>
+        <div class="hint-box" data-vp="cs"><strong>問い：</strong>なぜあのお客様は商品を手に取って、戻したのか？<br>棚の高さ・価格タグの位置・コーディネート提案のなさ… 買わない理由を推理する。</div>
+        <div class="hint-box" data-vp="ops"><strong>問い：</strong>この動線、スタッフ同士がぶつかりやすくなっていないか？<br>品出し→たたみ→レジの流れで「ロスタイム」が生まれている箇所を探す。</div>
+        <div class="hint-box" data-vp="vmd"><strong>問い：</strong>この照明・陳列、もっと商品を魅力的に見せられないか？<br>フェイスアップの向き・高さゾーン・色のグラデーション配置を観察する。</div>
+        <div class="hint-box" data-vp="loop"><strong>問い：</strong>「こうやる」ではなく「なぜこのルールが存在するのか？」<br>マニュアルの目的を問い直し、より良いやり方を提案できないか考える。</div>
+        <textarea id="q-insight" placeholder="視点タグを選ぶと問いが出ます。タグなしでもOK"></textarea>
+        <span class="lbl" style="margin-top:11px;">改善提案（1行）</span>
+        <textarea id="q-improve" placeholder="例：フィッティング待ち案内を早めにすれば離脱が減る" style="height:50px;"></textarea>
+      </div>
+
+      <!-- ⚡ ノイズ（失敗の資産化） -->
+      <div class="error-card">
+        <div class="error-title">⚡ 今日のノイズ — 失敗の資産化</div>
+        <div class="error-sub">予測と現実のズレこそ最大の学習源。原因不明でもいい、書き留めよう。</div>
+        <div class="ei-row" id="ei-row">
+          <button class="ei-btn sel" data-ei="minor" onclick="selEI(this)">小さなズレ</button>
+          <button class="ei-btn" data-ei="mid"   onclick="selEI(this)">気になった</button>
+          <button class="ei-btn" data-ei="major" onclick="selEI(this)">大きな失敗</button>
+        </div>
+        <textarea id="q-error" placeholder="例：畳みのリズムが後半に崩れた。湿度？疲れ？原因不明のまま終わった"></textarea>
+      </div>
+
+      <!-- 🔮 転移学習 -->
+      <div class="transfer-card">
+        <div class="transfer-title">🔮 転移学習メモ</div>
+        <div class="transfer-sub">今日の学びを別の世界に持ち込むと？汎用的な思考パターンを抽出する習慣が意思決定エンジンになる。</div>
+        <div class="te-chips">
+          <button class="te-chip" onclick="fillT('音楽・DJ')">音楽・DJ</button>
+          <button class="te-chip" onclick="fillT('プログラミング')">プログラミング</button>
+          <button class="te-chip" onclick="fillT('スポーツ')">スポーツ</button>
+          <button class="te-chip" onclick="fillT('料理')">料理</button>
+          <button class="te-chip" onclick="fillT('経営')">経営</button>
+          <button class="te-chip" onclick="fillT('デザイン')">デザイン</button>
+        </div>
+        <textarea id="q-transfer" placeholder="例：品出しの優先順位判断は、音楽ミックスの帯域整理と同じ構造だ"></textarea>
+      </div>
+
+      <!-- 🌱 感謝ログ -->
+      <div class="grat-card">
+        <div class="grat-title">🌱 今日の感謝ログ</div>
+        <div class="grat-sub">1行でOK — 心の積み重ねが折れない力になる</div>
+        <div class="grat-type-row">
+          <button class="grat-type-btn sel" id="gt-received" onclick="selGrat('received')">感謝された</button>
+          <button class="grat-type-btn" id="gt-gave" onclick="selGrat('gave')">感謝した</button>
+          <button class="grat-type-btn" id="gt-both" onclick="selGrat('both')">どちらも</button>
+        </div>
+        <textarea id="q-grat" placeholder="例：混んでるレジをカバーしてくれた先輩に助かった"></textarea>
+      </div>
+
+      <button class="btn-main" id="evening-save-btn" onclick="saveEvening()">AIフィードバックをもらって保存</button>
+      <div id="ai-result" style="display:none;margin-top:10px;">
+        <div class="card">
+          <div class="ai-tag">AI コーチ</div>
+          <div class="ai-box" id="ai-text"></div>
+        </div>
+      </div>
+    </div><!-- /evening-only -->
+  </div><!-- /tab-log -->
+
+  <!-- スキル -->
+  <div class="section" id="tab-skill">
+    <div class="card">
+      <div class="card-title">スキルツリー</div>
+      <div id="skill-list"></div>
+    </div>
+    <p class="section-note">＋ でレベルアップ（各5段階）</p>
+  </div>
+
+  <!-- 履歴 -->
+  <div class="section" id="tab-history">
+    <div class="card">
+      <div class="card-title">ログ履歴</div>
+      <div id="history-list"><div class="empty">記録がまだありません</div></div>
+    </div>
+  </div>
+
+  <!-- 統計 -->
+  <div class="section" id="tab-dash">
+    <div class="card">
+      <div class="card-title">成長グラフ</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-val" id="d-days">0</div><div class="stat-lbl">勤務日数</div></div>
+        <div class="stat-card"><div class="stat-val" id="d-stock">0</div><div class="stat-lbl">品出し計</div></div>
+        <div class="stat-card"><div class="stat-val" id="d-fold">0</div><div class="stat-lbl">畳み計</div></div>
+      </div>
+      <canvas id="energyChart" height="120"></canvas>
+      <p class="section-note" style="margin-top:5px;">エネルギー推移（直近10日）</p>
+    </div>
+    <div class="card">
+      <div class="card-title">予測精度</div>
+      <div id="accuracy-block"><div class="empty">夜モードで答え合わせするとここに集計されます</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">AIによる週次まとめ</div>
+      <button class="btn-sub" id="weekly-btn" onclick="getWeekly()">今週の振り返りを生成</button>
+      <div id="weekly-result" style="display:none;margin-top:12px;">
+        <div class="ai-tag">AI 週次レポート</div>
+        <div class="ai-box" id="weekly-text"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<!-- Auth overlay -->
+<div id="auth-overlay" style="position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:360px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:18px;font-weight:500;margin-bottom:6px;">Store<span style="color:var(--red);">Growth</span>Log</div>
+      <div style="font-size:13px;color:var(--text3);">ログインしてデータをクラウドに保存</div>
+    </div>
+    <div id="auth-msg" style="font-size:12px;color:var(--red);margin-bottom:10px;min-height:16px;text-align:center;"></div>
+    <input type="email" id="auth-email" placeholder="メールアドレス" style="margin-bottom:8px;">
+    <input type="password" id="auth-password" placeholder="パスワード（6文字以上）" style="margin-bottom:12px;">
+    <button class="btn-main" onclick="authLogin()" style="margin-bottom:8px;">ログイン</button>
+    <button class="btn-main" onclick="authSignup()" style="background:#1a1a1a;margin-bottom:16px;">新規登録</button>
+    <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;">データはSupabaseに安全に保存されます。<br>機種変してもログインすれば引き継げます。</div>
+  </div>
+</div>
+
+<!-- Sync indicator -->
+<div id="sync-indicator" style="position:fixed;bottom:16px;right:16px;font-size:11px;color:var(--text3);background:var(--surface);border:0.5px solid var(--border);border-radius:20px;padding:4px 10px;display:none;z-index:50;">⟳ 同期中...</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ── Supabase ──
+const SUPA_URL = 'https://zfocrmoblwlvihtgzbgs.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmb2NybW9ibHdsdmlodGd6YmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyMjQ2MDcsImV4cCI6MjA5MTgwMDYwN30.kDVya5Y-T_eIH9txnvPSAuNqIo8IFfoMOEE4Qptpiu4';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentUser = null;
+
+// ── Auth functions ──
+async function authLogin() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pw    = document.getElementById('auth-password').value;
+  const msg   = document.getElementById('auth-msg');
+  msg.textContent = 'ログイン中...';
+  const {data, error} = await supa.auth.signInWithPassword({email, password:pw});
+  if(error){ msg.textContent = 'エラー：' + error.message; return; }
+  await onLogin(data.user);
+}
+
+async function authSignup() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pw    = document.getElementById('auth-password').value;
+  const msg   = document.getElementById('auth-msg');
+  if(pw.length < 6){ msg.textContent = 'パスワードは6文字以上にしてください'; return; }
+  msg.textContent = '登録中...';
+  const {data, error} = await supa.auth.signUp({email, password:pw});
+  if(error){ msg.textContent = 'エラー：' + error.message; return; }
+  msg.textContent = '確認メールを送りました。メールのリンクをクリック後、ログインしてください。';
+}
+
+async function onLogin(user) {
+  currentUser = user;
+  document.getElementById('auth-overlay').style.display = 'none';
+  await syncFromCloud();
+  updateStreak();
+}
+
+// ── Cloud sync ──
+function showSync(){ document.getElementById('sync-indicator').style.display='block'; }
+function hideSync(){ document.getElementById('sync-indicator').style.display='none'; }
+
+async function syncFromCloud() {
+  if(!currentUser) return;
+  showSync();
+  try {
+    // Load logs
+    const {data:logsData} = await supa.from('logs').select('data').eq('user_id', currentUser.id).order('created_at');
+    if(logsData && logsData.length) {
+      logs = logsData.map(r=>r.data);
+      localStorage.setItem('sgl_logs', JSON.stringify(logs));
+    }
+    // Load skills
+    const {data:skillsData} = await supa.from('skills').select('data').eq('user_id', currentUser.id).order('updated_at', {ascending:false}).limit(1);
+    if(skillsData && skillsData.length) {
+      skills = skillsData[0].data;
+      localStorage.setItem('sgl_skills', JSON.stringify(skills));
+    }
+  } catch(e){ console.error('sync error', e); }
+  hideSync();
+}
+
+async function pushLog(logEntry) {
+  if(!currentUser) return;
+  showSync();
+  try {
+    await supa.from('logs').insert({user_id: currentUser.id, data: logEntry});
+  } catch(e){ console.error('push log error', e); }
+  hideSync();
+}
+
+async function pushSkills() {
+  if(!currentUser) return;
+  showSync();
+  try {
+    // upsert: delete old, insert new (simple approach for single-user)
+    await supa.from('skills').delete().eq('user_id', currentUser.id);
+    await supa.from('skills').insert({user_id: currentUser.id, data: skills});
+  } catch(e){ console.error('push skills error', e); }
+  hideSync();
+}
+
+// ── Init: check session ──
+(async () => {
+  const {data:{session}} = await supa.auth.getSession();
+  if(session?.user) {
+    await onLogin(session.user);
+  }
+  // else overlay stays visible
+})();
+async function authLogout() {
+  await supa.auth.signOut();
+  currentUser = null;
+  document.getElementById('auth-overlay').style.display = 'flex';
+}
+
+// ── State ──
+const SKILLS_DEF = ["挨拶・発声","たたみ（A品化）","B品判定","品出し・補充","レジ操作","VMD陳列","裾上げ知識","在庫システム","スタッフ連携","お客様対応"];
+let skills  = JSON.parse(localStorage.getItem('sgl_skills')||'null') || SKILLS_DEF.map(n=>({name:n,level:0}));
+let logs    = JSON.parse(localStorage.getItem('sgl_logs')||'[]');
+let todayPrediction = JSON.parse(localStorage.getItem('sgl_today_pred')||'null');
+let currentMode = 'morning';
+let eSelections=[],vpTag='',eiLevel='minor',gratType='received'; // eSelections: [{v,n,emoji}]
+const MAX_E=3;
+let extraOpen=false,chart=null;
+
+const today = () => { const n=new Date(); return `${String(n.getMonth()+1).padStart(2,'0')}/${String(n.getDate()).padStart(2,'0')}`; };
+const persist = () => {
+  localStorage.setItem('sgl_skills',JSON.stringify(skills));
+  localStorage.setItem('sgl_logs',JSON.stringify(logs));
+};
+const upd = (id,vid) => { document.getElementById(vid).textContent = document.getElementById(id).value; };
+const slv = id => parseFloat(document.getElementById(id).value);
+const updateStreak = () => { document.getElementById('streak').textContent = `🔥 ${logs.filter(l=>l.type==='evening').length}日連続`; };
+
+// ── Mode toggle ──
+function setMode(mode) {
+  currentMode = mode;
+  document.body.className = mode;
+  document.getElementById('btn-morning').classList.toggle('active', mode==='morning');
+  document.getElementById('btn-evening').classList.toggle('active', mode==='evening');
+  if (mode==='evening') renderReviewBlock();
+}
+
+// ── Tab ──
+function tab(t,btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  btn.classList.add('active');
+  if(t==='skill') renderSkills();
+  if(t==='history') renderHistory();
+  if(t==='dash') renderDash();
+}
+
+// ── Energy (multi-select up to 3) ──
+function selE(btn) {
+  const v=parseInt(btn.dataset.v), n=btn.dataset.n, emoji=btn.querySelector('.ep-emo').textContent;
+  const idx=eSelections.findIndex(s=>s.n===n);
+  if(idx>=0) {
+    // deselect
+    eSelections.splice(idx,1);
+    btn.classList.remove('sel');
+  } else {
+    if(eSelections.length>=MAX_E) return; // cap at 3
+    eSelections.push({v,n,emoji});
+    btn.classList.add('sel');
+  }
+  updateEDisplay();
+}
+function updateEDisplay() {
+  const disp=document.getElementById('energy-display');
+  if(!eSelections.length){ disp.textContent='選択してください（最大3つ）'; }
+  else {
+    disp.innerHTML=eSelections.map(s=>`${s.emoji} <strong>${s.n}</strong>`).join('　＋　')
+      + `<span style="font-size:10px;color:var(--text3);margin-left:6px;">(${eSelections.length}/3)</span>`;
+  }
+  // dim unselected buttons when cap reached
+  const atMax = eSelections.length >= MAX_E;
+  document.querySelectorAll('.ep').forEach(b=>{
+    const isSelected = eSelections.some(s=>s.n===b.dataset.n);
+    b.classList.toggle('dim', atMax && !isSelected);
+  });
+}
+function toggleMore() {
+  extraOpen=!extraOpen;
+  document.getElementById('eg-extra').style.display=extraOpen?'grid':'none';
+  document.getElementById('toggle-btn').textContent=extraOpen?'▲ 閉じる':'＋ もっと見る';
+}
+
+// ── Viewpoint ──
+function selVP(vp) {
+  vpTag=(vpTag===vp)?'':vp;
+  document.querySelectorAll('.vp-tab').forEach(b=>b.classList.toggle('sel',b.dataset.vp===vpTag));
+  document.querySelectorAll('.hint-box').forEach(b=>b.classList.toggle('show',b.dataset.vp===vpTag));
+  const phs={cs:'例：あのお客様が商品を戻した理由——サイズ表記が見づらかった？',ops:'例：品出しカートが通路をふさいでスタッフがすれ違えない',vmd:'例：ヒートテックの前面フェイスが中段に集中、目線ゾーンを空けると映えそう',loop:'例：A品化は在庫回転のため。なら売れ筋から優先してたたむべき'};
+  document.getElementById('q-insight').placeholder=vpTag?phs[vpTag]:'視点タグを選ぶと問いが出ます。タグなしでもOK';
+}
+
+// ── Error intensity ──
+function selEI(btn) {
+  eiLevel=btn.dataset.ei;
+  document.querySelectorAll('.ei-btn').forEach(b=>b.classList.toggle('sel',b===btn));
+}
+
+// ── Gratitude ──
+function selGrat(t) {
+  gratType=t;
+  ['received','gave','both'].forEach(k=>document.getElementById('gt-'+k).classList.toggle('sel',k===t));
+}
+
+// ── Transfer chips ──
+function fillT(domain) {
+  const ta=document.getElementById('q-transfer');
+  const ex={'音楽・DJ':'品出しの優先順位判断は、DJのキュー管理と同じ——次に何が必要か先読みする構造','プログラミング':'VMDの陳列ルールはリファクタリングと同じ。見た目を整えると動線（実行フロー）が速くなる','スポーツ':'スタッフ配置の最適化は、サッカーのポジショニングと同じ。スペースを埋めるより空けることが重要','料理':'品出しの優先順位は料理の仕込み順と同じ——火入れに時間がかかるものから先に動く','経営':'今日の改善提案は、リーンスタートアップのBuild-Measure-Learnを1日でやっていた','デザイン':'VMDの高さゾーン配置はUXの視線誘導と同じ——F字パターンで目が動く'};
+  if(!ta.value){ta.value=ex[domain]||`今日の学びを${domain}の世界で考えると…`;}
+  ta.focus();
+}
+
+// ── Morning save ──
+function saveMorning() {
+  const p1=document.getElementById('p1').value.trim();
+  const p2=document.getElementById('p2').value.trim();
+  const p3=document.getElementById('p3').value.trim();
+  const pred = {date:today(), p1, p2, p3, hits:['','','']};
+  localStorage.setItem('sgl_today_pred', JSON.stringify(pred));
+  todayPrediction = pred;
+  const btn=document.getElementById('morning-save-btn');
+  btn.textContent='✓ 保存済み！夜に答え合わせしよう';
+  btn.style.background='#92400e';
+  btn.disabled=true;
+  setTimeout(()=>{btn.disabled=false;btn.textContent='予測を上書き保存';btn.style.background='';btn.classList.add('morning');},3000);
+}
+
+// ── Render review block ──
+function renderReviewBlock() {
+  const block=document.getElementById('review-block');
+  const pred=JSON.parse(localStorage.getItem('sgl_today_pred')||'null');
+  if(!pred||!pred.p1){block.innerHTML='<div class="empty" style="padding:10px 0;">朝モードで予測を記録してから答え合わせしよう</div>';return;}
+  const preds=[{lbl:'① 難しそうなこと',txt:pred.p1},{lbl:'② チャレンジ',txt:pred.p2},{lbl:'③ エネルギー予測',txt:pred.p3}];
+  block.innerHTML=preds.filter(p=>p.txt).map((p,i)=>`
+    <div class="pred-review-item">
+      <div class="pred-original"><span>${p.lbl}</span>${p.txt}</div>
+      <div class="hit-row">
+        <button class="hit-btn" data-h="hit"     onclick="setHit(${i},'hit',this)">✓ 当たった</button>
+        <button class="hit-btn" data-h="partial" onclick="setHit(${i},'partial',this)">△ 半分</button>
+        <button class="hit-btn" data-h="miss"    onclick="setHit(${i},'miss',this)">✗ 外れた</button>
+      </div>
+      <textarea id="rev-${i}" placeholder="外れた・半分だった理由を一言（省略OK）" style="height:44px;font-size:12px;"></textarea>
+    </div>`).join('');
+  // restore previously set hits
+  if(pred.hits){pred.hits.forEach((h,i)=>{if(h){const btn=document.querySelector(`.hit-btn[data-h="${h}"]`);if(btn&&btn.closest('.pred-review-item')===document.querySelectorAll('.pred-review-item')[i])btn.classList.add('sel');}});}
+}
+
+let hitResults=[null,null,null];
+function setHit(idx,h,btn){
+  hitResults[idx]=h;
+  const item=document.querySelectorAll('.pred-review-item')[idx];
+  item.querySelectorAll('.hit-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+// ── Evening save ──
+async function saveEvening() {
+  const stock=slv('sl-stock'),cs=slv('sl-cs'),fold=slv('sl-fold'),hours=slv('sl-hours');
+  const focus=slv('sl-focus'),team=slv('sl-team');
+  const insight=document.getElementById('q-insight').value.trim();
+  const improve=document.getElementById('q-improve').value.trim();
+  const errorNote=document.getElementById('q-error').value.trim();
+  const transfer=document.getElementById('q-transfer').value.trim();
+  const grat=document.getElementById('q-grat').value.trim();
+  const pred=JSON.parse(localStorage.getItem('sgl_today_pred')||'null');
+  const revNotes=[0,1,2].map(i=>{const el=document.getElementById('rev-'+i);return el?el.value.trim():''});
+  const hitLabels={hit:'当たった',partial:'半分',miss:'外れた'};
+  const eiLabel={minor:'小さなズレ',mid:'気になった',major:'大きな失敗'};
+  const vpLabel={cs:'顧客視点',ops:'現場効率',vmd:'VMD演出',loop:'ダブルループ'};
+
+  const btn=document.getElementById('evening-save-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>AI分析中...';
+
+  // Derive energy summary from multi-selections
+  const eAvg = eSelections.length ? Math.round(eSelections.reduce((a,s)=>a+s.v,0)/eSelections.length) : 0;
+  const eMoodStr = eSelections.length ? eSelections.map(s=>s.n).join('・') : '未選択';
+  const eEmojiStr = eSelections.map(s=>s.emoji).join('');
+  let predSummary='なし';
+  if(pred&&pred.p1){
+    const pArr=[{lbl:'難しそうなこと',txt:pred.p1},{lbl:'チャレンジ',txt:pred.p2},{lbl:'エネルギー予測',txt:pred.p3}];
+    predSummary=pArr.filter(p=>p.txt).map((p,i)=>`${p.lbl}「${p.txt}」→${hitResults[i]?hitLabels[hitResults[i]]:'未評価'}${revNotes[i]?' ('+revNotes[i]+')':''}`).join(' / ');
+  }
+
+  const prompt=`あなたはユニクロ（ファーストリテイリング）の凄腕店長トレーナーです。新入りスタッフの今日の日報を読んで、130〜170字で店長視点の的確・前向きなフィードバックをしてください。褒め1割・改善提案2割・次の一手7割。予測と結果のズレがあれば必ずそこに言及してください。
+
+【今日の記録】
+- 品出し:${stock}箱 / 畳み:${fold}枚 / 接客:${cs}人 / 勤務:${hours}h
+- 気分:${eMoodStr} / 集中:${focus}/5 / チーム:${team}/5
+- 朝の予測→結果: ${predSummary}
+- 気づき視点:${vpTag?vpLabel[vpTag]:'なし'} / ${insight||'なし'}
+- 改善提案:${improve||'なし'}
+- ノイズ(${eiLabel[eiLevel]}):${errorNote||'なし'}
+- 転移学習:${transfer||'なし'}
+- 感謝:${grat||'なし'}
+
+1段落で返してください。`;
+
+  let feedback='';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    const d=await res.json();
+    feedback=d.content?.[0]?.text||'フィードバック取得に失敗しました';
+  }catch(e){feedback='ネットワークエラーが発生しました';}
+
+  const logEntry={type:'evening',date:today(),eSelections:[...eSelections],eVal:eAvg,eName:eMoodStr,eEmoji:eEmojiStr,focus,team,stock,cs,fold,hours,vpTag,insight,improve,errorNote,eiLevel,transfer,grat,gratType,prediction:pred?{p1:pred.p1,p2:pred.p2,p3:pred.p3}:null,hitResults:[...hitResults],revNotes,aiFeedback:feedback};
+  logs.push(logEntry);
+  persist(); updateStreak();
+  await pushLog(logEntry);
+  localStorage.removeItem('sgl_today_pred');
+
+  document.getElementById('ai-text').textContent=feedback;
+  document.getElementById('ai-result').style.display='block';
+  btn.disabled=false; btn.textContent='✓ 保存済み！また明日！'; btn.style.background='#1a1a1a';
+}
+
+// ── Skills ──
+function renderSkills(){
+  document.getElementById('skill-list').innerHTML=skills.map((s,i)=>`
+    <div class="skill-item">
+      <span class="skill-name">${s.name}</span>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${Math.min(s.level*20,100)}%"></div></div>
+      <span class="skill-pct">${Math.min(s.level*20,100)}%</span>
+      <button class="skill-plus" onclick="lvUp(${i})">＋</button>
+    </div>`).join('');
+}
+function lvUp(i){if(skills[i].level<5)skills[i].level++;persist();pushSkills();renderSkills();}
+
+// ── History ──
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  const eveningLogs=logs.filter(l=>l.type==='evening');
+  if(!eveningLogs.length){el.innerHTML='<div class="empty">記録がまだありません</div>';return;}
+  const hitIcon={hit:'✓',partial:'△',miss:'✗'};
+  el.innerHTML=[...eveningLogs].reverse().slice(0,30).map(l=>`
+    <div class="log-item">
+      <div class="log-meta">${l.date}　${l.eEmoji||''} ${l.eName||''}</div>
+      <div class="log-nums">品出し ${l.stock}箱 ／ 畳み ${l.fold}枚 ／ 接客 ${l.cs}人</div>
+      ${l.prediction&&l.prediction.p1?`<div class="log-row">予測: ${l.hitResults.map((h,i)=>h?`<span class="tag-pill pill-${h}">${hitIcon[h]}</span>`:''  ).join('')}${l.prediction.p1.slice(0,25)}…</div>`:''}
+      ${l.insight?`<div class="log-row">${l.vpTag?`<span class="tag-pill pill-${l.vpTag}">${{cs:'👤',ops:'⚙️',vmd:'💡',loop:'🔁'}[l.vpTag]}</span>`:''} ${l.insight}</div>`:''}
+      ${l.errorNote?`<div class="log-row" style="color:#92400e;">⚡ ${l.errorNote}</div>`:''}
+      ${l.transfer?`<div class="log-row" style="color:#5b21b6;">🔮 ${l.transfer}</div>`:''}
+      ${l.grat?`<div class="log-row" style="color:var(--green);">🌱 ${l.grat}</div>`:''}
+      ${l.aiFeedback?`<div class="log-ai">🤖 ${l.aiFeedback.slice(0,75)}…</div>`:''}
+    </div>`).join('');
+}
+
+// ── Dashboard ──
+function renderDash(){
+  const ev=logs.filter(l=>l.type==='evening');
+  document.getElementById('d-days').textContent=ev.length;
+  document.getElementById('d-stock').textContent=ev.reduce((a,l)=>a+(parseFloat(l.stock)||0),0);
+  document.getElementById('d-fold').textContent=ev.reduce((a,l)=>a+(parseFloat(l.fold)||0),0);
+
+  const recent=ev.slice(-10);
+  const ctx=document.getElementById('energyChart').getContext('2d');
+  if(chart)chart.destroy();
+  chart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:recent.map(l=>l.date.slice(5)),
+      datasets:[
+        {label:'エネルギー',data:recent.map(l=>l.eVal||0),borderColor:'#E60012',backgroundColor:'rgba(230,0,18,0.05)',tension:0.35,fill:true,pointBackgroundColor:'#E60012',pointRadius:4},
+        {label:'集中度',data:recent.map(l=>l.focus||0),borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.04)',tension:0.35,fill:false,pointBackgroundColor:'#16a34a',pointRadius:3,borderDash:[4,3]}
+      ]
+    },
+    options:{plugins:{legend:{display:true,labels:{boxWidth:10,font:{size:10}}}},scales:{y:{min:0,max:5,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false},ticks:{font:{size:10}}}},responsive:true}
+  });
+
+  // Prediction accuracy
+  const withPred=ev.filter(l=>l.prediction&&l.prediction.p1&&l.hitResults&&l.hitResults.some(h=>h));
+  const accBlock=document.getElementById('accuracy-block');
+  if(!withPred.length){accBlock.innerHTML='<div class="empty">予測答え合わせを記録するとここに集計されます</div>';return;}
+  const total=withPred.reduce((a,l)=>a+l.hitResults.filter(h=>h).length,0);
+  const hits=withPred.reduce((a,l)=>a+l.hitResults.filter(h=>h==='hit').length,0);
+  const partials=withPred.reduce((a,l)=>a+l.hitResults.filter(h=>h==='partial').length,0);
+  const pct=total?Math.round((hits+partials*0.5)/total*100):0;
+  accBlock.innerHTML=`
+    <div class="stat-grid" style="margin-bottom:0;">
+      <div class="stat-card"><div class="stat-val">${pct}%</div><div class="stat-lbl">予測精度</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#16a34a;">${hits}</div><div class="stat-lbl">当たった</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--red);">${withPred.reduce((a,l)=>a+l.hitResults.filter(h=>h==='miss').length,0)}</div><div class="stat-lbl">外れた</div></div>
+    </div>`;
+}
+
+// ── Weekly ──
+async function getWeekly(){
+  const btn=document.getElementById('weekly-btn');
+  btn.disabled=true;btn.textContent='生成中...';
+  const recent=logs.filter(l=>l.type==='evening').slice(-7);
+  if(!recent.length){document.getElementById('weekly-text').textContent='まず日報を記録してください。';document.getElementById('weekly-result').style.display='block';btn.disabled=false;btn.textContent='今週の振り返りを生成';return;}
+  const summary=recent.map(l=>`${l.date}: 品出し${l.stock}箱 畳み${l.fold}枚 接客${l.cs}人 集中${l.focus||'-'} 気分:${l.eName||'-'} ノイズ:${l.errorNote||'なし'} 転移:${l.transfer||'なし'} | ${l.insight||''}`).join('\n');
+  const prompt=`ユニクロ新人スタッフの直近7日分データ。成長トレンド・予測精度・ノイズのパターンを踏まえ、来週の重点課題を1つ選んで170字以内でアドバイスしてください。\n\n${summary}`;
+  let result='';
+  try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});const d=await res.json();result=d.content?.[0]?.text||'生成に失敗しました';}catch(e){result='エラーが発生しました';}
+  document.getElementById('weekly-text').textContent=result;
+  document.getElementById('weekly-result').style.display='block';
+  btn.disabled=false;btn.textContent='今週の振り返りを生成';
+}
+
+updateStreak();
+</script>
+</body>
+</html>
